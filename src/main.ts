@@ -11,7 +11,8 @@ async function gracefulShutdown(): Promise<void> {
 
 export async function start(): Promise<void> {
   await initConnection()
-  await runIndexers()
+  const balancesPath = process.argv[2]
+  await runIndexers(balancesPath)
 
   // attach graceful shutdown
   const signals = ['SIGHUP', 'SIGINT', 'SIGTERM'] as const

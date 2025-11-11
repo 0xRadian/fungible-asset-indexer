@@ -4,6 +4,7 @@
         "name" : "fungible-asset-indexer",
         "cwd" : ".",
         "script" : "npm run start",
+        "args" : "balances.json",
         "watch" : false,
         "autorestart" : true
       }

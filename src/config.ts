@@ -15,5 +15,6 @@ export const config = {
     denom: string
     type: FungibleAssetType
     start_height: number
+    balances?: Record<string, string>
   }[],
 }

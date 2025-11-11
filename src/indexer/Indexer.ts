@@ -8,8 +8,18 @@ import { FungibleAssetType } from 'src/lib/enum'
 import { logger } from 'src/lib/logger'
 import { getPrimaryStore } from 'src/lib/primary'
 
-const batchSize = 10
+const batchSize = 100
 export class FungibleAssetIndexer extends Monitor {
+  constructor(
+    rpcUrl: string,
+    restUrl: string,
+    faType: FungibleAssetType,
+    denom: string,
+    startHeight: number,
+    private readonly balances?: Record<string, string>
+  ) {
+    super(rpcUrl, restUrl, faType, denom, startHeight)
+  }
   name(): string {
     return `fungible_asset_indexer-${this.denom}`
   }
@@ -45,6 +55,28 @@ export class FungibleAssetIndexer extends Monitor {
           denom: this.denom,
         }
       )
+
+      if (this.balances) {
+        const balances = Object.entries(this.balances).map(
+          ([account, amount]) => ({
+            owner: account,
+            storeAddress: getPrimaryStore(account, this.metadata),
+            denom: this.denom,
+            amount,
+          })
+        )
+        for (let i = 0; i < balances.length; i += batchSize) {
+          const batch = balances.slice(i, i + batchSize)
+          await manager.getRepository(BalanceEntity).insert(batch)
+          logger.info(
+            `Processed ${Math.min(i + batchSize, balances.length)} of ${
+              balances.length
+            } accounts`
+          )
+        }
+        return
+      }
+
       // get all accounts
       const accounts = await this.rest.getAllCosmosAccounts(this.startHeight)
       // get all balances and insert them into the balance table
@@ -74,7 +106,6 @@ export class FungibleAssetIndexer extends Monitor {
         )
         if (batchResults.length === 0) continue
         await manager.getRepository(BalanceEntity).insert(batchResults)
-        await new Promise((resolve) => setTimeout(resolve, 100)) // 100ms delay
       }
     })
   }
