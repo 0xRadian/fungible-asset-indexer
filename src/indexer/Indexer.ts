@@ -8,7 +8,7 @@ import { FungibleAssetType } from 'src/lib/enum'
 import { logger } from 'src/lib/logger'
 import { getPrimaryStore } from 'src/lib/primary'
 
-const batchSize = 100
+const batchSize = 10
 export class FungibleAssetIndexer extends Monitor {
   name(): string {
     return `fungible_asset_indexer-${this.denom}`
@@ -66,8 +66,15 @@ export class FungibleAssetIndexer extends Monitor {
             })
           )
         ).filter((result) => result.amount !== '0')
+        logger.info(
+          `Processed ${Math.min(
+            i + batchSize,
+            accounts.length
+          )} of ${accounts.length} accounts`
+        )
         if (batchResults.length === 0) continue
         await manager.getRepository(BalanceEntity).insert(batchResults)
+        await new Promise((resolve) => setTimeout(resolve, 100)) // 100ms delay
       }
     })
   }

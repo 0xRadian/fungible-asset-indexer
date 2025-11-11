@@ -2,6 +2,7 @@ import { AccAddress, bcs, Coins, Denom } from '@initia/initia.js'
 import Axios, { AxiosInstance } from 'axios'
 import https from 'https'
 import http from 'http'
+import { sleep } from './utils'
 
 export interface Account {
   '@type': string
@@ -54,7 +55,7 @@ export class RESTClient {
   }
 
   async getCosmosBaseAccounts(height: number, paginationKey?: string) {
-    const params: APIParams = {}
+    const params: APIParams = { 'pagination.limit': 1000 }
     if (paginationKey) {
       params['pagination.key'] = paginationKey
     }
@@ -82,21 +83,35 @@ export class RESTClient {
     for (;;) {
       const response = await this.getCosmosBaseAccounts(height, paginationKey)
       accounts.push(...response.accounts)
-      if (response.pagination.next_key) {
+      console.log(`Fetched ${accounts.length} accounts...`)
+      if (response.pagination.next_key && accounts.length < 5000) {
         paginationKey = response.pagination.next_key
       } else {
         break
       }
     }
+    console.log(`Total accounts fetched: ${accounts.length}`)
     return accounts
   }
 
   async getBalance(height: number, account: string, denom: string) {
-    return this.get<BalanceResponse>(
-      `/cosmos/bank/v1beta1/balances/${account}/by_denom`,
-      { denom },
-      height
-    ).then((res) => res.balance)
+    for (let i = 0; i < 5; i++) {
+      try {
+        return await this.get<BalanceResponse>(
+          `/cosmos/bank/v1beta1/balances/${account}/by_denom`,
+          { denom },
+          height
+        ).then((res) => res.balance)
+      } catch (e) {
+        if (e.response?.status === 429 || e.code === 'ECONNABORTED') {
+          const delay = 2 ** i * 4000
+          await sleep(delay)
+        } else {
+          throw e
+        }
+      }
+    }
+    throw new Error(`Failed to get balance for ${account} after 5 retries`)
   }
 
   async viewFunction<T>(
