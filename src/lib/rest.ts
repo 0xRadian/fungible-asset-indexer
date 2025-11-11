@@ -84,7 +84,7 @@ export class RESTClient {
       const response = await this.getCosmosBaseAccounts(height, paginationKey)
       accounts.push(...response.accounts)
       console.log(`Fetched ${accounts.length} accounts...`)
-      if (response.pagination.next_key && accounts.length < 5000) {
+      if (response.pagination.next_key) {
         paginationKey = response.pagination.next_key
       } else {
         break
