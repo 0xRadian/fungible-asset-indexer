@@ -1,4 +1,5 @@
 import { EntityManager, In } from 'typeorm'
+import { bcs, AccAddress } from '@initia/initia.js'
 import { parseEvents } from '../lib/parse'
 import { ScrappedBlock } from '../lib/rpc'
 import { Monitor } from './Monitor'
@@ -318,7 +319,8 @@ export class FungibleAssetIndexer extends Monitor {
     height: number,
     storeAddress: string
   ): Promise<string | undefined> {
-    const owner = await this.rest.getFugibleStoreOwner(height, storeAddress)
+    const ownerHex = await this.rest.getFugibleStoreOwner(height, storeAddress)
+    const owner = AccAddress.fromHex(ownerHex)
 
     const primaryStore = getPrimaryStore(owner, this.metadata)
     if (primaryStore === storeAddress.replace(/^0x0+|^0x|^0+(?!x)/, '')) {
