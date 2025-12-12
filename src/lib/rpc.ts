@@ -79,10 +79,12 @@ export class RPCClient {
   }
 
   async scrapBlock(height: number): Promise<ScrappedBlock> {
+    //console.log(`Scrapping block at height: ${height}`)
     const [block, blockResults] = await Promise.all([
       this.getBlock(height),
       this.getBlockResults(height),
     ])
+    //console.log(`Successfully scrapped block at height: ${height}`)
 
     const rawTxs: string[] = block.data.txs ?? []
     const infos: TxInfo[] = []

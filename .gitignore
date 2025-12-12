@@ -16,7 +16,6 @@ dist/
 # ormconfig
 ormconfig.json
 
-.env
 build
 temp*
 !charts/**/templates/

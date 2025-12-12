@@ -49,6 +49,7 @@ export class RESTClient {
   }
 
   async getMetadata(denom: Denom): Promise<string> {
+    console.log(`Fetching metadata for denom: ${denom}`)
     return this.get<{ metadata: string }>('/initia/move/v1/metadata', {
       denom,
     }).then((res) => res.metadata)
