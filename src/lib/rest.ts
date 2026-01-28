@@ -41,7 +41,6 @@ export class RESTClient {
     this.axios = Axios.create({
       headers: {
         Accept: 'application/json',
-	'auth-key': 'hPrI5IShP72c7zkCxa07Kf9bIRH5QBtBTshErgq1Gg',
       },
       httpsAgent: new https.Agent({ keepAlive: true }),
       httpAgent: new http.Agent({ keepAlive: true }),
