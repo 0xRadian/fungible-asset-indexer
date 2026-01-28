@@ -245,7 +245,23 @@ export class RESTClient {
     const headers = height
       ? { 'x-cosmos-block-height': `${height}` }
       : undefined
-    return this.axios.get(url, { params, headers }).then((res) => res.data as T)
+    try {
+      return await this.axios
+        .get(url, { params, headers })
+        .then((res) => res.data as T)
+    } catch (err: any) {
+      if (err.response) {
+        console.error('Axios GET error details:', {
+          status: err.response.status,
+          statusText: err.response.statusText,
+          data: err.response.data,
+          url,
+          params,
+          height,
+        })
+      }
+      throw err
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -254,7 +270,22 @@ export class RESTClient {
     const headers = height
       ? { 'x-cosmos-block-height': `${height}` }
       : undefined
-    return this.axios.post(url, data, { headers }).then((res) => res.data as T)
+    try {
+      return await this.axios
+        .post(url, data, { headers })
+        .then((res) => res.data as T)
+    } catch (err: any) {
+      if (err.response) {
+        console.error('Axios POST error details:', {
+          status: err.response.status,
+          statusText: err.response.statusText,
+          data: err.response.data,
+          url,
+          height,
+        })
+      }
+      throw err
+    }
   }
 
   private computeEndpoint(endpoint: string) {

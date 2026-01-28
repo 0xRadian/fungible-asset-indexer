@@ -216,7 +216,12 @@ export class FungibleAssetIndexer extends Monitor {
       },
     })
 
-    for (const balance of updatableBalances) {
+    for (const [index, balance] of updatableBalances.entries()) {
+      logger.info(
+        `Updating owner for ${balance.storeAddress} (${index + 1}/${
+          updatableBalances.length
+        })`
+      )
       const owner = await this.getOwnerOfStore(height, balance.storeAddress)
       if (owner) {
         balance.owner = owner
