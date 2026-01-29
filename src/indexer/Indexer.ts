@@ -216,12 +216,7 @@ export class FungibleAssetIndexer extends Monitor {
       },
     })
 
-    for (const [index, balance] of updatableBalances.entries()) {
-      logger.info(
-        `Updating owner for ${balance.storeAddress} (${index + 1}/${
-          updatableBalances.length
-        })`
-      )
+    for (const balance of updatableBalances) {
       const owner = await this.getOwnerOfStore(height, balance.storeAddress)
       if (owner) {
         balance.owner = owner
@@ -324,7 +319,12 @@ export class FungibleAssetIndexer extends Monitor {
     height: number,
     storeAddress: string
   ): Promise<string | undefined> {
-    const ownerHex = await this.rest.getFugibleStoreOwner(height, storeAddress)
+    let ownerHex: string
+    try {
+      ownerHex = await this.rest.getFugibleStoreOwner(height, storeAddress)
+    } catch (err) {
+      return
+    }
     const owner = AccAddress.fromHex(ownerHex)
 
     const primaryStore = getPrimaryStore(owner, this.metadata)
