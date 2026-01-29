@@ -216,16 +216,20 @@ export class FungibleAssetIndexer extends Monitor {
       },
     })
 
+    const updatedBalances: BalanceEntity[] = []
     for (const balance of updatableBalances) {
       const owner = await this.getOwnerOfStore(height, balance.storeAddress)
+      if (owner === 'FAILED') continue
+
       if (owner) {
         balance.owner = owner
         balance.primary = true
       } else {
         balance.primary = false
       }
+      updatedBalances.push(balance)
     }
-    await manager.getRepository(BalanceEntity).save(updatableBalances)
+    await manager.getRepository(BalanceEntity).save(updatedBalances)
   }
 
   /**
@@ -322,8 +326,8 @@ export class FungibleAssetIndexer extends Monitor {
     let ownerHex: string
     try {
       ownerHex = await this.rest.getFugibleStoreOwner(height, storeAddress)
-    } catch (err) {
-      return
+    } catch (err: any) {
+      return 'FAILED'
     }
     const owner = AccAddress.fromHex(ownerHex)
 
